@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>contracte</title>
+    <title>Capturer et envoyer une image</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
         /* Style de la page */
@@ -57,12 +57,39 @@
             margin-bottom: 5px;
         }
 
+        #group {
+            width: 300px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            background-color: #fff;
+            font-size: 16px;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+
+        #group:hover,
+        #group:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        /* Custom styling for the task select (Tarea) */
         #message {
             width: 300px;
             padding: 10px;
-            border-radius: 5px;
-            border: 2px solid #ddd;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            background-color: #fff;
             font-size: 16px;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+
+        #message:hover,
+        #message:focus {
+            border-color: #007BFF;
+            outline: none;
         }
 
         /* Ajouter des effets à la caméra */
@@ -78,6 +105,16 @@
     <button id="capture">Capturer l'image</button>
     <button id="send" style="display: none;">Envoyer à Telegram</button>
     <br>
+    
+    <select id="group" name="group" required>
+        <option value="-1001234567890">AGRI STRATEGIE</option>
+        <option value="-1000987654321">AGRI SUPPORT</option>
+        <option value="-1001122334455">BEST PROFIL</option>
+        <option value="-1002233445566">AGRICONOMIE</option>
+        <option value="-1003344556677">FARM LABOUR</option>
+    </select>
+    <br><br>
+
     <label for="tarea" class="animated-label">Ouvrier:</label>
     <select id="message" name="tarea" required></select><br><br>
     
@@ -90,9 +127,10 @@
         const sendButton = document.getElementById("send");
         const ctx = canvas.getContext("2d");
         const messageInput = document.getElementById("message");
+        const groupSelect = document.getElementById("group");
 
-        // تفعيل الكاميرا الخلفية
-navigator.mediaDevices.enumerateDevices().then(devices => {
+        // Activer la caméra arrière
+        navigator.mediaDevices.enumerateDevices().then(devices => {
     const videoDevices = devices.filter(device => device.kind === 'videoinput');
     const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear'));
     const constraints = {
@@ -103,9 +141,8 @@ navigator.mediaDevices.enumerateDevices().then(devices => {
 
     navigator.mediaDevices.getUserMedia(constraints)
         .then(stream => video.srcObject = stream)
-        .catch(err => console.error("Erreur d'activation de la caméra:", err));
-});
-
+                .catch(err => console.error("Erreur d'activation de la caméra:", err));
+        });
 
         // Capturer l'image
         captureButton.addEventListener("click", () => {
@@ -118,10 +155,11 @@ navigator.mediaDevices.enumerateDevices().then(devices => {
         // Envoyer l'image à Telegram
         sendButton.addEventListener("click", () => {
             const message = messageInput.value;  // Récupérer le texte de l'entrée
+            const groupId = groupSelect.value;  // Récupérer l'ID du groupe sélectionné
 
             canvas.toBlob(blob => {
                 const formData = new FormData();
-                formData.append("chat_id", "-1002408201424");  // Remplacez par votre Chat ID
+                formData.append("chat_id", groupId);  // Utiliser l'ID du groupe sélectionné
                 formData.append("photo", blob, "photo.jpg");
                 formData.append("caption", message);  // Envoyer le texte avec l'image
 
@@ -151,7 +189,7 @@ navigator.mediaDevices.enumerateDevices().then(devices => {
                 const choices = new Choices('#message', {
                     searchEnabled: true,
                     placeholder: true,
-                    placeholderValue: 'Choisir Ouvrier'
+                    placeholderValue: 'Choisir Tarea'
                 });
             })
             .catch(error => console.error("Erreur de chargement des données:", error));
