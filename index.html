@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التقاط وإرسال صورة</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
 </head>
 <body>
 
@@ -13,12 +12,8 @@
     <button id="capture">التقاط الصورة</button>
     <button id="send" style="display: none;">إرسال إلى Telegram</button>
     <br>
-    <label for="tarea" class="animated-label">Tarea:</label>
-    <select id="message" name="tarea" required></select><br><br>
-    <br>
-    
-
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <label for="message">أدخل رسالة:</label>
+    <input type="text" id="message" placeholder="أدخل نصاً هنا">
 
     <script>
         const video = document.getElementById("camera");
@@ -70,28 +65,6 @@
                 .catch(error => console.error("خطأ أثناء الإرسال:", error));
             }, "image/jpeg");
         });
-
-        // جلب البيانات من Google Apps Script وتعبئة الـ Select
-        fetch('https://script.google.com/macros/s/AKfycbyM43VhZiCVEbOvWpT8klFJDkFU911bdWvFZnLvmFeCCSw6LtpbCMIdtOSHED_BzsGxuw/exec')
-            .then(response => response.json())
-            .then(data => {
-                const comboBox = document.getElementById('message');
-                data.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item;
-                    option.textContent = item;
-                    comboBox.appendChild(option);
-                });
-
-                // تفعيل البحث في القائمة باستخدام Choices.js
-                const choices = new Choices('#message', {
-                    searchEnabled: true,
-                    placeholder: true,
-                    placeholderValue: 'اختر Tarea'
-                });
-            })
-            .catch(error => console.error("حدث خطأ في تحميل البيانات:", error));
-
     </script>
 
 </body>
