@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CONTACT</title>
+    <title>Capturer et envoyer une image</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
         body {
@@ -138,13 +138,15 @@
 
         // Ouvrir la caméra
         openCameraButton.addEventListener("click", () => {
-            cameraContainer.style.display = "flex";
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => console.error("Erreur d'activation de la caméra:", err));
-        });
+    cameraContainer.style.display = "flex";
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => console.error("Erreur d'activation de la caméra:", err));
+});
+
 
         // Capturer l'image
         captureButton.addEventListener("click", () => {
