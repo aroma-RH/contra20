@@ -91,20 +91,21 @@
         const ctx = canvas.getContext("2d");
         const messageInput = document.getElementById("message");
 
-        // Activer la caméra arrière
-        navigator.mediaDevices.enumerateDevices().then(devices => {
-            const videoDevices = devices.filter(device => device.kind === 'videoinput');
-            const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear'));
-            const constraints = {
-                video: {
-                    deviceId: rearCamera ? { exact: rearCamera.deviceId } : undefined
-                }
-            };
+        // تفعيل الكاميرا الخلفية
+navigator.mediaDevices.enumerateDevices().then(devices => {
+    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+    const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear'));
+    const constraints = {
+        video: {
+            deviceId: rearCamera ? { exact: rearCamera.deviceId } : undefined
+        }
+    };
 
-            navigator.mediaDevices.getUserMedia(constraints)
-                .then(stream => video.srcObject = stream)
-                .catch(err => console.error("Erreur d'activation de la caméra:", err));
-        });
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => video.srcObject = stream)
+        .catch(err => console.error("Erreur d'activation de la caméra:", err));
+});
+
 
         // Capturer l'image
         captureButton.addEventListener("click", () => {
