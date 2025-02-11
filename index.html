@@ -84,12 +84,27 @@
         <option value="-1002233445566">AGRICONOMIE</option>
         <option value="-1003344556677">FARM LABOUR</option>
     </select>
-
+    <select id="finca">
+        <option value="FINCA 1">FINCA 1</option>
+        <option value="FINCA 2">FINCA 2</option>
+        <option value="FINCA 3">FINCA 3</option>
+        <option value="FINCA 4">FINCA 4</option>
+        <option value="FINCA 5">FINCA 5</option>
+        <option value="FINCA 6">FINCA 6</option>
+        <option value="FINCA 8">FINCA 8</option>
+        <option value="FINCA 9">FINCA 9</option>
+        <option value="FINCA 13">FINCA 13</option>
+        <option value="FINCA 19">FINCA 19</option>
+        <option value="FINCA 20">FINCA 20</option>
+        <option value="FINCA 21">FINCA 21</option>
+        <option value="FINCA 22">FINCA 22</option>
+    </select>
+    
     <!-- Choisir un ouvrier -->
     <label for="worker">Sélectionner l'ouvrier :</label>
     <select id="worker"></select>
 
-    <!-- Ouvrir la caméra -->
+    
     <button id="openCamera">📷 Ouvrir la caméra</button>
 
     <!-- Zone de la caméra -->
@@ -125,6 +140,7 @@
     const sendButton = document.getElementById("send");
     const workerSelect = document.getElementById("worker");
     const groupSelect = document.getElementById("group");
+    const fincaSelect = document.getElementById("finca");
 
     let imageDataUrl = null;
 
@@ -168,6 +184,8 @@
     sendButton.addEventListener("click", () => {
         const workerName = workerSelect.value;
         const groupId = groupSelect.value;
+        const finca = fincaSelect.value;
+
 
         if (!imageDataUrl) {
             alert("Veuillez capturer une image avant d'envoyer.");
@@ -180,7 +198,7 @@
                 const formData = new FormData();
                 formData.append("chat_id", groupId);
                 formData.append("photo", blob, "photo.jpg");
-                formData.append("caption", `Ouvrier: ${workerName}`);
+                formData.append("caption", ` ${workerName} ${finca}`);
 
                 fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
                     method: "POST",
@@ -192,7 +210,7 @@
             });
     });
 
-   
+    // 🔹 Charger la liste des ouvriers depuis Google Apps Script
     fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
         .then(response => response.json())
         .then(data => {
