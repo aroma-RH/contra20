@@ -3,35 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capturer et envoyer une image</title>
+    <title>Capture et Envoi d'Image</title>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
+            text-align: center;
             background-color: #f4f4f4;
-            margin: 0;
             padding: 20px;
-            
+        }
+        .container {
+            display: flex;
             flex-direction: column;
             align-items: center;
         }
-
-        select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 2px solid #ccc;
-            background-color: #fff;
-            font-size: 16px;
+        video, canvas, img {
+            width: 300px;
+            border-radius: 10px;
             margin-top: 10px;
-            transition: border-color 0.3s ease;
+            display: none;
+            border: 3px solid #ddd;
         }
-
-        select:hover, select:focus {
-            border-color: #007BFF;
-            outline: none;
-        }
-
         button {
             background-color: #007BFF;
             color: white;
@@ -41,180 +34,160 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
         }
-
         button:hover {
             background-color: #0056b3;
         }
-
-        button:disabled {
-            background-color: #aaa;
-            cursor: not-allowed;
-        }
-
-        #camera-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        video, img {
-            width: 100%;
-            max-width: 400px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border: 3px solid #ddd;
+        .hidden { display: none; }
+        select {
+            width: 300px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            font-size: 16px;
             margin-bottom: 10px;
         }
-
         #preview-container {
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        #delete {
-            background-color: red;
-        }
-
-        #delete:hover {
-            background-color: darkred;
         }
     </style>
 </head>
 <body>
 
-    <select id="worker" required>
-        <option value="">Sélectionner un ouvrier</option>
+<div class="container">
+    <h2>Capture et Envoi d'Image</h2>
+
+    <!-- Choisir un groupe Telegram -->
+    <label for="group">Sélectionner le groupe :</label>
+    <select id="group">
+        <option value="-1002408201424">AGRI STRATEGIE</option>
+        <option value="-1000987654321">AGRI SUPPORT</option>
+        <option value="-1002408201424">BEST PROFIL</option>
+        <option value="-1002233445566">AGRICONOMIE</option>
+        <option value="-1003344556677">FARM LABOUR</option>
     </select>
 
+    <!-- Choisir un ouvrier -->
+    <label for="worker">Sélectionner l'ouvrier :</label>
+    <select id="worker"></select>
+
+    <!-- Ouvrir la caméra -->
     <button id="openCamera">📷 Ouvrir la caméra</button>
 
-    <div id="camera-container">
+    <!-- Zone de la caméra -->
+    <div id="cameraContainer" class="hidden">
         <video id="camera" autoplay></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-        <button id="capture">Capturer l'image</button>
+        <canvas id="canvas"></canvas>
+        <button id="capture">📸 Capturer</button>
     </div>
 
-    <div id="preview-container">
-        <img id="preview-image" src="">
-        <button id="confirm">Confirmer</button>
-        <button id="delete">Supprimer</button>
+    <!-- Prévisualisation de l'image -->
+    <div id="preview-container" class="hidden">
+        <h3>Prévisualisation</h3>
+        <img id="preview" alt="Image capturée">
+        <button id="delete">🗑 Supprimer</button>
+        <button id="confirm">✅ Confirmer</button>
     </div>
 
-    <button id="send" style="display: none;">📤 Envoyer à Telegram</button>
+    <!-- Envoyer l'image -->
+    <button id="send" class="hidden">📤 Envoyer à Telegram</button>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-    <script>
-        const workerSelect = document.getElementById("worker");
-        const openCameraButton = document.getElementById("openCamera");
-        const cameraContainer = document.getElementById("camera-container");
-        const video = document.getElementById("camera");
-        const canvas = document.getElementById("canvas");
-        const captureButton = document.getElementById("capture");
-        const previewContainer = document.getElementById("preview-container");
-        const previewImage = document.getElementById("preview-image");
-        const confirmButton = document.getElementById("confirm");
-        const deleteButton = document.getElementById("delete");
-        const sendButton = document.getElementById("send");
+<script>
+    const openCameraButton = document.getElementById("openCamera");
+    const cameraContainer = document.getElementById("cameraContainer");
+    const video = document.getElementById("camera");
+    const canvas = document.getElementById("canvas");
+    const captureButton = document.getElementById("capture");
+    const previewContainer = document.getElementById("preview-container");
+    const previewImage = document.getElementById("preview");
+    const deleteButton = document.getElementById("delete");
+    const confirmButton = document.getElementById("confirm");
+    const sendButton = document.getElementById("send");
+    const workerSelect = document.getElementById("worker");
+    const groupSelect = document.getElementById("group");
 
-        let capturedImage = null;
+    let imageDataUrl = null;
 
-        // Charger les ouvriers depuis Google Apps Script
-        fetch('https://script.googleusercontent.com/macros/echo?user_content_key=DCWF9bGuPGU-JzTQ8MSQng7W_Ms5QByGoI0fnvvIo6kmQyTLTKySW0yadzsbsBU-o4edtjElwmyXzYLJ2RViNai8kxMS4eCnm5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnHyPjBg0votBhVBRPnkUM7fICeht48MR84CVo7R1f1lZDBEKLLpa5ONnZUXXpVHaErPDuXezRHNzvpJIpa7q6EtwnPFL05cnhNz9Jw9Md8uu&lib=MK8OqKfmiU-9CxYs0QEIgxk1M3aPXTvE2')
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(worker => {
-                    const option = document.createElement('option');
-                    option.value = worker;
-                    option.textContent = worker;
-                    workerSelect.appendChild(option);
-                });
+    // 🔹 Ouvrir la caméra
+    openCameraButton.addEventListener("click", () => {
+        cameraContainer.style.display = "flex";
 
-                new Choices(workerSelect, { searchEnabled: true, placeholderValue: 'Choisir un ouvrier' });
-            })
-            .catch(error => console.error("Erreur de chargement des ouvriers:", error));
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => console.error("Erreur d'activation de la caméra:", err));
+    });
 
-        // Ouvrir la caméra
-        openCameraButton.addEventListener("click", () => {
-    cameraContainer.style.display = "flex";
+    // 🔹 Capturer une image
+    captureButton.addEventListener("click", () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(stream => {
-            video.srcObject = stream;
-        })
-        .catch(err => console.error("Erreur d'activation de la caméra:", err));
-});
+        imageDataUrl = canvas.toDataURL("image/jpeg");
+        previewImage.src = imageDataUrl;
 
+        previewContainer.style.display = "flex";
+        cameraContainer.style.display = "none";
+    });
 
-        // Capturer l'image
-        captureButton.addEventListener("click", () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+    // 🔹 Supprimer l'image
+    deleteButton.addEventListener("click", () => {
+        previewContainer.style.display = "none";
+        imageDataUrl = null;
+    });
 
-            capturedImage = canvas.toDataURL("image/jpeg");
-            previewImage.src = capturedImage;
-            previewContainer.style.display = "flex";
-            sendButton.style.display = "none";
-        });
+    // 🔹 Confirmer l'image (stockage local)
+    confirmButton.addEventListener("click", () => {
+        localStorage.setItem("capturedImage", imageDataUrl);
+        sendButton.style.display = "block";
+    });
 
-        // Confirmer l'image
-        confirmButton.addEventListener("click", () => {
-            if (capturedImage) {
-                localStorage.setItem("capturedImage", capturedImage);
-                sendButton.style.display = "block";
-            }
-        });
+    // 🔹 Envoyer l'image à Telegram
+    sendButton.addEventListener("click", () => {
+        const workerName = workerSelect.value;
+        const groupId = groupSelect.value;
 
-        // Supprimer l'image
-        deleteButton.addEventListener("click", () => {
-            previewImage.src = "";
-            previewContainer.style.display = "none";
-            sendButton.style.display = "none";
-            localStorage.removeItem("capturedImage");
-        });
+        if (!imageDataUrl) {
+            alert("Veuillez capturer une image avant d'envoyer.");
+            return;
+        }
 
-        // Envoyer l'image à Telegram
-        sendButton.addEventListener("click", () => {
-            const selectedWorker = workerSelect.value;
-            if (!selectedWorker) {
-                alert("Veuillez sélectionner un ouvrier.");
-                return;
-            }
+        fetch(imageDataUrl)
+            .then(res => res.blob())
+            .then(blob => {
+                const formData = new FormData();
+                formData.append("chat_id", groupId);
+                formData.append("photo", blob, "photo.jpg");
+                formData.append("caption", `Ouvrier: ${workerName}`);
 
-            const imageData = localStorage.getItem("capturedImage");
-            if (!imageData) {
-                alert("Aucune image confirmée.");
-                return;
-            }
-
-            fetch(imageData)
-                .then(res => res.blob())
-                .then(blob => {
-                    const formData = new FormData();
-                    formData.append("chat_id", "-1002408201424"); // Remplacez par votre ID de groupe Telegram
-                    formData.append("photo", blob, "photo.jpg");
-                    formData.append("caption", `Ouvrier: ${selectedWorker}`);
-
-                    return fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
-                        method: "POST",
-                        body: formData
-                    });
+                fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
+                    method: "POST",
+                    body: formData
                 })
                 .then(response => response.json())
-                .then(data => {
-                    console.log("Envoi réussi:", data);
-                    alert("Image envoyée avec succès !");
-                    localStorage.removeItem("capturedImage");
-                    previewContainer.style.display = "none";
-                    sendButton.style.display = "none";
-                })
+                .then(data => console.log("Envoi réussi:", data))
                 .catch(error => console.error("Erreur lors de l'envoi:", error));
-        });
+            });
+    });
 
-    </script>
+    // 🔹 Charger la liste des ouvriers depuis Google Apps Script
+    fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                option.textContent = item;
+                workerSelect.appendChild(option);
+            });
+
+            new Choices(workerSelect, { searchEnabled: true });
+        })
+        .catch(error => console.error("Erreur de chargement des données:", error));
+</script>
 
 </body>
 </html>
