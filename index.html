@@ -198,7 +198,7 @@
                 const formData = new FormData();
                 formData.append("chat_id", groupId);
                 formData.append("photo", blob, "photo.jpg");
-                formData.append("caption", ` ${workerName} ${finca}`);
+                formData.append("caption", ` ${workerName}  ( ${finca} )`);
 
                 fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
                     method: "POST",
