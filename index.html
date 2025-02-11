@@ -1,23 +1,86 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التقاط وإرسال صورة</title>
+    <title>contracte</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+    <style>
+        /* Style de la page */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* Conteneur de la caméra */
+        #camera {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border: 3px solid #ddd;
+        }
+
+        /* Boutons de contrôle */
+        button {
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        /* Style du Select */
+        .animated-label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        #message {
+            width: 300px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            font-size: 16px;
+        }
+
+        /* Ajouter des effets à la caméra */
+        canvas {
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
     <video id="camera" autoplay></video>
-    <canvas id="canvas" style="display: none;"></canvas>
-    <button id="capture">التقاط الصورة</button>
-    <button id="send" style="display: none;">إرسال إلى Telegram</button>
+    <canvas id="canvas"></canvas>
+    <button id="capture">Capturer l'image</button>
+    <button id="send" style="display: none;">Envoyer à Telegram</button>
     <br>
-    <label for="tarea" class="animated-label">Tarea:</label>
+    <label for="tarea" class="animated-label">Ouvrier:</label>
     <select id="message" name="tarea" required></select><br><br>
-    <br>
     
-
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
     <script>
@@ -28,7 +91,7 @@
         const ctx = canvas.getContext("2d");
         const messageInput = document.getElementById("message");
 
-        // تفعيل الكاميرا الخلفية
+        // Activer la caméra arrière
         navigator.mediaDevices.enumerateDevices().then(devices => {
             const videoDevices = devices.filter(device => device.kind === 'videoinput');
             const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear'));
@@ -40,10 +103,10 @@
 
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => video.srcObject = stream)
-                .catch(err => console.error("خطأ في تشغيل الكاميرا:", err));
+                .catch(err => console.error("Erreur d'activation de la caméra:", err));
         });
 
-        // التقاط الصورة
+        // Capturer l'image
         captureButton.addEventListener("click", () => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -51,27 +114,27 @@
             sendButton.style.display = "block";
         });
 
-        // إرسال الصورة إلى Telegram
+        // Envoyer l'image à Telegram
         sendButton.addEventListener("click", () => {
-            const message = messageInput.value;  // الحصول على نص الإدخال
+            const message = messageInput.value;  // Récupérer le texte de l'entrée
 
             canvas.toBlob(blob => {
                 const formData = new FormData();
-                formData.append("chat_id", "-1002408201424");  // استبدل بـ Chat ID الخاص بك
+                formData.append("chat_id", "-1002408201424");  // Remplacez par votre Chat ID
                 formData.append("photo", blob, "photo.jpg");
-                formData.append("caption", message);  // إرسال النص مع الصورة
+                formData.append("caption", message);  // Envoyer le texte avec l'image
 
                 fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
                     method: "POST",
                     body: formData
                 })
                 .then(response => response.json())
-                .then(data => console.log("تم الإرسال:", data))
-                .catch(error => console.error("خطأ أثناء الإرسال:", error));
+                .then(data => console.log("Envoi réussi:", data))
+                .catch(error => console.error("Erreur lors de l'envoi:", error));
             }, "image/jpeg");
         });
 
-        // جلب البيانات من Google Apps Script وتعبئة الـ Select
+        // Récupérer les données de Google Apps Script et remplir le Select
         fetch('https://script.google.com/macros/s/AKfycbyM43VhZiCVEbOvWpT8klFJDkFU911bdWvFZnLvmFeCCSw6LtpbCMIdtOSHED_BzsGxuw/exec')
             .then(response => response.json())
             .then(data => {
@@ -83,14 +146,14 @@
                     comboBox.appendChild(option);
                 });
 
-                // تفعيل البحث في القائمة باستخدام Choices.js
+                // Activer la recherche dans la liste avec Choices.js
                 const choices = new Choices('#message', {
                     searchEnabled: true,
                     placeholder: true,
-                    placeholderValue: 'اختر Tarea'
+                    placeholderValue: 'Choisir Ouvrier'
                 });
             })
-            .catch(error => console.error("حدث خطأ في تحميل البيانات:", error));
+            .catch(error => console.error("Erreur de chargement des données:", error));
 
     </script>
 
