@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقاط وإرسال صورة</title>
+</head>
+<body>
+
+    <video id="camera" autoplay></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <button id="capture">التقاط الصورة</button>
+    <button id="send" style="display: none;">إرسال إلى Telegram</button>
+
+    <script>
+        const video = document.getElementById("camera");
+        const canvas = document.getElementById("canvas");
+        const captureButton = document.getElementById("capture");
+        const sendButton = document.getElementById("send");
+        const ctx = canvas.getContext("2d");
+
+        // تفعيل الكاميرا
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => video.srcObject = stream)
+            .catch(err => console.error("خطأ في تشغيل الكاميرا:", err));
+
+        // التقاط الصورة
+        captureButton.addEventListener("click", () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            sendButton.style.display = "block";
+        });
+
+        // إرسال الصورة إلى Telegram
+        sendButton.addEventListener("click", () => {
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append("chat_id", "-1002408201424"); // استبدل بـ Chat ID الخاص بك
+                formData.append("photo", blob, "photo.jpg");
+
+                fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => console.log("تم الإرسال:", data))
+                .catch(error => console.error("خطأ أثناء الإرسال:", error));
+            }, "image/jpeg");
+        });
+    </script>
+
+</body>
+</html>
