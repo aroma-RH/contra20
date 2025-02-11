@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capture et Envoi d'Image</title>
+    <title>mini</title>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f4f4f4;
             padding: 20px;
@@ -22,22 +22,19 @@
             width: 300px;
             border-radius: 10px;
             margin-top: 10px;
-            display: none;
             border: 3px solid #ddd;
         }
         button {
             background-color: #007BFF;
             color: white;
             font-size: 16px;
-            padding: 10px 20px;
+            padding: 10px;
             margin: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #0056b3;
-        }
+        button:hover { background-color: #0056b3; }
         .hidden { display: none; }
         select {
             width: 300px;
@@ -47,10 +44,29 @@
             font-size: 16px;
             margin-bottom: 10px;
         }
-        #preview-container {
+        .preview-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .preview-container img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .button-group {
+            position: absolute;
+            top: 10px;
+            left: 10px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            gap: 10px;
+        }
+        .button-group button {
+            padding: 5px 10px;
+            font-size: 14px;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .button-group button:hover {
+            background-color: rgba(255, 0, 0, 0.8);
         }
     </style>
 </head>
@@ -79,16 +95,18 @@
     <!-- Zone de la caméra -->
     <div id="cameraContainer" class="hidden">
         <video id="camera" autoplay></video>
-        <canvas id="canvas"></canvas>
         <button id="capture">📸 Capturer</button>
     </div>
 
     <!-- Prévisualisation de l'image -->
     <div id="preview-container" class="hidden">
-        <h3>Prévisualisation</h3>
-        <img id="preview" alt="Image capturée">
-        <button id="delete">🗑 Supprimer</button>
-        <button id="confirm">✅ Confirmer</button>
+        <div class="preview-container">
+            <div class="button-group">
+                <button id="delete">🗑</button>
+                <button id="confirm">✅</button>
+            </div>
+            <img id="preview" alt="Image capturée">
+        </div>
     </div>
 
     <!-- Envoyer l'image -->
@@ -99,7 +117,6 @@
     const openCameraButton = document.getElementById("openCamera");
     const cameraContainer = document.getElementById("cameraContainer");
     const video = document.getElementById("camera");
-    const canvas = document.getElementById("canvas");
     const captureButton = document.getElementById("capture");
     const previewContainer = document.getElementById("preview-container");
     const previewImage = document.getElementById("preview");
@@ -113,7 +130,8 @@
 
     // 🔹 Ouvrir la caméra
     openCameraButton.addEventListener("click", () => {
-        cameraContainer.style.display = "flex";
+        cameraContainer.classList.remove("hidden");
+        previewContainer.classList.add("hidden");
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
             .then(stream => { video.srcObject = stream; })
@@ -122,6 +140,7 @@
 
     // 🔹 Capturer une image
     captureButton.addEventListener("click", () => {
+        const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -129,23 +148,23 @@
         imageDataUrl = canvas.toDataURL("image/jpeg");
         previewImage.src = imageDataUrl;
 
-        previewContainer.style.display = "flex";
-        cameraContainer.style.display = "none";
+        previewContainer.classList.remove("hidden");
+        cameraContainer.classList.add("hidden"); // إخفاء الفيديو بعد التصوير
     });
 
     // 🔹 Supprimer l'image
     deleteButton.addEventListener("click", () => {
-        previewContainer.style.display = "none";
+        previewContainer.classList.add("hidden");
         imageDataUrl = null;
     });
 
-    // 🔹 Confirmer l'image (stockage local)
+    // 🔹 Confirmer l'image (stockage محلي)
     confirmButton.addEventListener("click", () => {
         localStorage.setItem("capturedImage", imageDataUrl);
-        sendButton.style.display = "block";
+        sendButton.classList.remove("hidden");
     });
 
-    // 🔹 Envoyer l'image à Telegram
+    // 🔹 إرسال الصورة إلى Telegram
     sendButton.addEventListener("click", () => {
         const workerName = workerSelect.value;
         const groupId = groupSelect.value;
@@ -173,7 +192,7 @@
             });
     });
 
-    // 🔹 Charger la liste des ouvriers depuis Google Apps Script
+   
     fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
         .then(response => response.json())
         .then(data => {
