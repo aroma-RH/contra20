@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mini</title>
+    <title>minikkk</title>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
@@ -156,6 +156,22 @@
 
     // 🔹 Capturer une image
     captureButton.addEventListener("click", () => {
+        // إظهار تأثير الفلاش
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.top = 0;
+        flash.style.left = 0;
+        flash.style.width = '100%';
+        flash.style.height = '100%';
+        flash.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+        flash.style.zIndex = 9999;
+        document.body.appendChild(flash);
+        
+        setTimeout(() => {
+            flash.remove();  // إزالة الفلاش بعد 300 مللي ثانية
+        }, 300);
+
+        // التقاط الصورة
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -186,7 +202,6 @@
         const groupId = groupSelect.value;
         const finca = fincaSelect.value;
 
-
         if (!imageDataUrl) {
             alert("Veuillez capturer une image avant d'envoyer.");
             return;
@@ -198,7 +213,7 @@
                 const formData = new FormData();
                 formData.append("chat_id", groupId);
                 formData.append("photo", blob, "photo.jpg");
-                formData.append("caption", ` ${workerName}  ( ${finca} )`);
+                formData.append("caption", `${workerName} ( ${finca} )`);
 
                 fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
                     method: "POST",
