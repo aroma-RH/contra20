@@ -11,6 +11,9 @@
     <canvas id="canvas" style="display: none;"></canvas>
     <button id="capture">التقاط الصورة</button>
     <button id="send" style="display: none;">إرسال إلى Telegram</button>
+    <br>
+    <label for="message">أدخل رسالة:</label>
+    <input type="text" id="message" placeholder="أدخل نصاً هنا">
 
     <script>
         const video = document.getElementById("camera");
@@ -18,11 +21,22 @@
         const captureButton = document.getElementById("capture");
         const sendButton = document.getElementById("send");
         const ctx = canvas.getContext("2d");
+        const messageInput = document.getElementById("message");
 
-        // تفعيل الكاميرا
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => video.srcObject = stream)
-            .catch(err => console.error("خطأ في تشغيل الكاميرا:", err));
+        // تفعيل الكاميرا الخلفية
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear'));
+            const constraints = {
+                video: {
+                    deviceId: rearCamera ? { exact: rearCamera.deviceId } : undefined
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(stream => video.srcObject = stream)
+                .catch(err => console.error("خطأ في تشغيل الكاميرا:", err));
+        });
 
         // التقاط الصورة
         captureButton.addEventListener("click", () => {
@@ -34,10 +48,13 @@
 
         // إرسال الصورة إلى Telegram
         sendButton.addEventListener("click", () => {
+            const message = messageInput.value;  // الحصول على نص الإدخال
+
             canvas.toBlob(blob => {
                 const formData = new FormData();
-                formData.append("chat_id", "-1002408201424"); // استبدل بـ Chat ID الخاص بك
+                formData.append("chat_id", "-1002408201424");  // استبدل بـ Chat ID الخاص بك
                 formData.append("photo", blob, "photo.jpg");
+                formData.append("caption", message);  // إرسال النص مع الصورة
 
                 fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
                     method: "POST",
