@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mincsi</title>
+    <title>min52i</title>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
@@ -167,9 +167,25 @@
         flash.style.zIndex = 9999;
         document.body.appendChild(flash);
         
-        setTimeout(() => {
-            flash.remove();  // إزالة الفلاش بعد 300 مللي ثانية
-        }, 300);
+        // 🔹 التحقق من تشغيل الكاميرا وتشغيل الفلاش
+navigator.mediaDevices.getUserMedia({ 
+    video: { facingMode: "environment" } 
+}).then(stream => {
+    const video = document.getElementById("camera");
+    video.srcObject = stream;
+
+    const track = stream.getVideoTracks()[0]; // الحصول على track الكاميرا
+    const capabilities = track.getCapabilities();
+
+    // إذا كان الجهاز يدعم الفلاش، نقوم بتشغيله
+    if (capabilities.torch) {
+        track.applyConstraints({
+            advanced: [{ torch: true }] // تشغيل الفلاش
+        });
+    }
+
+}).catch(err => console.error("Erreur d'activation de la caméra:", err));
+
 
         // التقاط الصورة
         const canvas = document.createElement("canvas");
