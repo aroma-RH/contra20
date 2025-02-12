@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capture et Envoi d'Image HD</title>
+    <title>Choisir et Envoyer une Image</title>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
@@ -18,7 +18,7 @@
             flex-direction: column;
             align-items: center;
         }
-        video, canvas, img {
+        img {
             width: 320px;
             border-radius: 10px;
             margin-top: 10px;
@@ -36,7 +36,7 @@
         }
         button:hover { background-color: #0056b3; }
         .hidden { display: none; }
-        select {
+        select, input[type="file"] {
             width: 320px;
             padding: 10px;
             border-radius: 8px;
@@ -44,36 +44,12 @@
             font-size: 16px;
             margin-bottom: 10px;
         }
-        .preview-container {
-            position: relative;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        .preview-container img {
-            width: 100%;
-            border-radius: 10px;
-        }
-        .button-group {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            display: flex;
-            gap: 10px;
-        }
-        .button-group button {
-            padding: 5px 10px;
-            font-size: 14px;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        .button-group button:hover {
-            background-color: rgba(255, 0, 0, 0.8);
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Capture et Envoi d'Image HD</h2>
+    <h2>Choisir et Envoyer une Image</h2>
 
     <label for="group">Sélectionner le groupe :</label>
     <select id="group">
@@ -87,127 +63,53 @@
     <label for="worker">Sélectionner l'ouvrier :</label>
     <select id="worker"></select>
 
-    <button id="openCamera">📷 Ouvrir la caméra</button>
-
-    <div id="cameraContainer" class="hidden">
-        <video id="camera" autoplay></video>
-        <button id="capture">📸 Capturer</button>
-    </div>
-
+    <input type="file" id="imageInput" accept="image/*">
+    
     <div id="preview-container" class="hidden">
-        <div class="preview-container">
-            <div class="button-group">
-                <button id="delete">🗑</button>
-                <button id="confirm">✅</button>
-            </div>
-            <img id="preview" alt="Image capturée">
-        </div>
+        <img id="preview" alt="Image sélectionnée">
+        <button id="send">📤 Envoyer à Telegram</button>
     </div>
-
-    <button id="send" class="hidden">📤 Envoyer à Telegram</button>
 </div>
 
 <script>
-    const openCameraButton = document.getElementById("openCamera");
-    const cameraContainer = document.getElementById("cameraContainer");
-    const video = document.getElementById("camera");
-    const captureButton = document.getElementById("capture");
+    const imageInput = document.getElementById("imageInput");
     const previewContainer = document.getElementById("preview-container");
     const previewImage = document.getElementById("preview");
-    const deleteButton = document.getElementById("delete");
-    const confirmButton = document.getElementById("confirm");
     const sendButton = document.getElementById("send");
-    const workerSelect = document.getElementById("worker");
     const groupSelect = document.getElementById("group");
 
-    let imageDataUrl = null;
+    let selectedFile = null;
 
-    openCameraButton.addEventListener("click", () => {
-        cameraContainer.classList.remove("hidden");
-        previewContainer.classList.add("hidden");
-
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => console.error("Erreur d'activation de la caméra:", err));
-    });
-
-    captureButton.addEventListener("click", () => {
-        // Effet de flash
-        const flash = document.createElement('div');
-        flash.style.position = 'absolute';
-        flash.style.top = 0;
-        flash.style.left = 0;
-        flash.style.width = '100%';
-        flash.style.height = '100%';
-        flash.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-        flash.style.zIndex = 9999;
-        document.body.appendChild(flash);
-
-        setTimeout(() => { flash.remove(); }, 400);
-
-        // Capture avec haute qualité
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        const scaleFactor = 3;
-        canvas.width = video.videoWidth * scaleFactor;
-        canvas.height = video.videoHeight * scaleFactor;
-
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Ajouter du texte
-        const workerName = workerSelect.value;
-        const text = `Ouvrier: ${workerName}`;
-
-        ctx.font = "bold 40px Arial";
-        ctx.fillStyle = "white";
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 3;
-        ctx.textAlign = "center";
-
-        const textX = canvas.width / 2;
-        const textY = canvas.height - 80;
-
-        ctx.strokeText(text, textX, textY);
-        ctx.fillText(text, textX, textY);
-
-        imageDataUrl = canvas.toDataURL("image/jpeg", 1.0);
-        previewImage.src = imageDataUrl;
-        previewContainer.classList.remove("hidden");
-        cameraContainer.classList.add("hidden");
-    });
-
-    deleteButton.addEventListener("click", () => {
-        previewContainer.classList.add("hidden");
-        imageDataUrl = null;
-    });
-
-    confirmButton.addEventListener("click", () => {
-        localStorage.setItem("capturedImage", imageDataUrl);
-        sendButton.classList.remove("hidden");
+    imageInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.classList.remove("hidden");
+            };
+            reader.readAsDataURL(file);
+        }
     });
 
     sendButton.addEventListener("click", () => {
-        if (!imageDataUrl) {
-            alert("Veuillez capturer une image avant d'envoyer.");
+        if (!selectedFile) {
+            alert("Veuillez sélectionner une image avant d'envoyer.");
             return;
         }
 
-        fetch(imageDataUrl)
-            .then(res => res.blob())
-            .then(blob => {
-                const formData = new FormData();
-                formData.append("chat_id", groupSelect.value);
-                formData.append("photo", blob, "photo.jpg");
-                formData.append("caption", `Photo envoyée.`);
+        const formData = new FormData();
+        formData.append("chat_id", groupSelect.value);
+        formData.append("photo", selectedFile);
+        formData.append("caption", `Photo envoyée.`);
 
-                fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(() => alert("Photo envoyée avec succès."))
-                .catch(() => alert("Erreur lors de l'envoi."));
-            });
+        fetch("https://api.telegram.org/botbot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
+            method: "POST",
+            body: formData
+        })
+        .then(() => alert("Photo envoyée avec succès."))
+        .catch(() => alert("Erreur lors de l'envoi."));
     });
 </script>
 
