@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>min52i</title>
+    <title>Capture et Envoi d'Image HD</title>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
@@ -19,7 +19,7 @@
             align-items: center;
         }
         video, canvas, img {
-            width: 300px;
+            width: 320px;
             border-radius: 10px;
             margin-top: 10px;
             border: 3px solid #ddd;
@@ -37,7 +37,7 @@
         button:hover { background-color: #0056b3; }
         .hidden { display: none; }
         select {
-            width: 300px;
+            width: 320px;
             padding: 10px;
             border-radius: 8px;
             border: 2px solid #ccc;
@@ -73,9 +73,8 @@
 <body>
 
 <div class="container">
-    <h2>Capture et Envoi d'Image</h2>
+    <h2>Capture et Envoi d'Image HD</h2>
 
-    <!-- Choisir un groupe Telegram -->
     <label for="group">Sélectionner le groupe :</label>
     <select id="group">
         <option value="-1002408201424">AGRI STRATEGIE</option>
@@ -84,36 +83,17 @@
         <option value="-1002233445566">AGRICONOMIE</option>
         <option value="-1003344556677">FARM LABOUR</option>
     </select>
-    <select id="finca">
-        <option value="FINCA 1">FINCA 1</option>
-        <option value="FINCA 2">FINCA 2</option>
-        <option value="FINCA 3">FINCA 3</option>
-        <option value="FINCA 4">FINCA 4</option>
-        <option value="FINCA 5">FINCA 5</option>
-        <option value="FINCA 6">FINCA 6</option>
-        <option value="FINCA 8">FINCA 8</option>
-        <option value="FINCA 9">FINCA 9</option>
-        <option value="FINCA 13">FINCA 13</option>
-        <option value="FINCA 19">FINCA 19</option>
-        <option value="FINCA 20">FINCA 20</option>
-        <option value="FINCA 21">FINCA 21</option>
-        <option value="FINCA 22">FINCA 22</option>
-    </select>
-    
-    <!-- Choisir un ouvrier -->
+
     <label for="worker">Sélectionner l'ouvrier :</label>
     <select id="worker"></select>
 
-    
     <button id="openCamera">📷 Ouvrir la caméra</button>
 
-    <!-- Zone de la caméra -->
     <div id="cameraContainer" class="hidden">
         <video id="camera" autoplay></video>
         <button id="capture">📸 Capturer</button>
     </div>
 
-    <!-- Prévisualisation de l'image -->
     <div id="preview-container" class="hidden">
         <div class="preview-container">
             <div class="button-group">
@@ -124,7 +104,6 @@
         </div>
     </div>
 
-    <!-- Envoyer l'image -->
     <button id="send" class="hidden">📤 Envoyer à Telegram</button>
 </div>
 
@@ -140,11 +119,9 @@
     const sendButton = document.getElementById("send");
     const workerSelect = document.getElementById("worker");
     const groupSelect = document.getElementById("group");
-    const fincaSelect = document.getElementById("finca");
 
     let imageDataUrl = null;
 
-    // 🔹 Ouvrir la caméra
     openCameraButton.addEventListener("click", () => {
         cameraContainer.classList.remove("hidden");
         previewContainer.classList.add("hidden");
@@ -155,113 +132,83 @@
     });
 
     captureButton.addEventListener("click", () => {
-    // تأثير الفلاش
-    const flash = document.createElement('div');
-    flash.style.position = 'absolute';
-    flash.style.top = 0;
-    flash.style.left = 0;
-    flash.style.width = '100%';
-    flash.style.height = '100%';
-    flash.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-    flash.style.zIndex = 9999;
-    document.body.appendChild(flash);
+        // Effet de flash
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.top = 0;
+        flash.style.left = 0;
+        flash.style.width = '100%';
+        flash.style.height = '100%';
+        flash.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+        flash.style.zIndex = 9999;
+        document.body.appendChild(flash);
 
-    setTimeout(() => {
-        flash.remove(); // إزالة الفلاش بعد 300 مللي ثانية
-    }, 300);
+        setTimeout(() => { flash.remove(); }, 400);
 
-    // التقاط الصورة بدقة عالية
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+        // Capture avec haute qualité
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-    // زيادة دقة الصورة
-    const scaleFactor = 2; // زيادة الحجم بمقدار 2 مرات
-    canvas.width = video.videoWidth * scaleFactor;
-    canvas.height = video.videoHeight * scaleFactor;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const scaleFactor = 3;
+        canvas.width = video.videoWidth * scaleFactor;
+        canvas.height = video.videoHeight * scaleFactor;
 
-    // إضافة النص داخل الصورة (مثال على نص العقد)
-    const workerName = workerSelect.value;
-    const finca = fincaSelect.value;
-    const text = `Nom: ${workerName}\nFinca: ${finca}`;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    ctx.font = '30px Arial'; // تعيين حجم الخط
-    ctx.fillStyle = 'white'; // تعيين لون الخط
-    ctx.textAlign = 'center'; // محاذاة النص
-    ctx.fillText(text, canvas.width / 2, canvas.height - 50); // إضافة النص في أسفل الصورة
+        // Ajouter du texte
+        const workerName = workerSelect.value;
+        const text = `Ouvrier: ${workerName}`;
 
-    // تحويل الصورة إلى قاعدة بيانات (Base64) بجودة عالية
-    imageDataUrl = canvas.toDataURL("image/jpeg", 1.0); // 1.0 تعني أعلى جودة
+        ctx.font = "bold 40px Arial";
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        ctx.textAlign = "center";
 
-    previewImage.src = imageDataUrl;
-    previewContainer.classList.remove("hidden");
-    cameraContainer.classList.add("hidden"); // إخفاء الفيديو بعد التصوير
-});
+        const textX = canvas.width / 2;
+        const textY = canvas.height - 80;
 
+        ctx.strokeText(text, textX, textY);
+        ctx.fillText(text, textX, textY);
 
-    // 🔹 Supprimer l'image
+        imageDataUrl = canvas.toDataURL("image/jpeg", 1.0);
+        previewImage.src = imageDataUrl;
+        previewContainer.classList.remove("hidden");
+        cameraContainer.classList.add("hidden");
+    });
+
     deleteButton.addEventListener("click", () => {
         previewContainer.classList.add("hidden");
         imageDataUrl = null;
     });
 
-    // 🔹 Confirmer l'image (stockage محلي)
     confirmButton.addEventListener("click", () => {
         localStorage.setItem("capturedImage", imageDataUrl);
         sendButton.classList.remove("hidden");
     });
 
-    // 🔹 إرسال الصورة إلى Telegram
     sendButton.addEventListener("click", () => {
-    const workerName = workerSelect.value;
-    const groupId = groupSelect.value;
-    const finca = fincaSelect.value;
+        if (!imageDataUrl) {
+            alert("Veuillez capturer une image avant d'envoyer.");
+            return;
+        }
 
-    if (!imageDataUrl) {
-        alert("Veuillez capturer une image avant d'envoyer.");
-        return;
-    }
+        fetch(imageDataUrl)
+            .then(res => res.blob())
+            .then(blob => {
+                const formData = new FormData();
+                formData.append("chat_id", groupSelect.value);
+                formData.append("photo", blob, "photo.jpg");
+                formData.append("caption", `Photo envoyée.`);
 
-    fetch(imageDataUrl)
-        .then(res => res.blob())
-        .then(blob => {
-            const formData = new FormData();
-            formData.append("chat_id", groupId);
-            formData.append("photo", blob, "photo.jpg");
-            formData.append("caption", `${workerName} ( ${finca} )`);
-            
-            // إرسال الصورة بدون ضغط
-            fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Envoi réussi:", data);
-                alert("Photo envoyée avec succès.");
-            })
-            .catch(error => {
-                console.error("Erreur lors de l'envoi:", error);
-                alert("Erreur lors de l'envoi.");
+                fetch("https://api.telegram.org/bot<VOTRE_BOT_TOKEN>/sendPhoto", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(() => alert("Photo envoyée avec succès."))
+                .catch(() => alert("Erreur lors de l'envoi."));
             });
-        });
-});
-
-
-    // 🔹 Charger la liste des ouvriers depuis Google Apps Script
-    fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item;
-                option.textContent = item;
-                workerSelect.appendChild(option);
-            });
-
-            new Choices(workerSelect, { searchEnabled: true });
-        })
-        .catch(error => console.error("Erreur de chargement des données:", error));
+    });
 </script>
 
 </body>
