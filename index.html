@@ -253,6 +253,44 @@
         });
     });
 
+
+
+    sendButton.addEventListener("click", () => {
+        const group = groupSelect.value;
+        const finca = fincaSelect.value;
+        const worker = workerSelect.value;
+
+       
+        if (!group || !finca || !worker) {
+            alert("يرجى تحديد جميع القيم قبل الإرسال.");
+            return;
+        }
+
+        
+        const [workerId, ...workerNameArr] = worker.split(' ');
+        const workerName = workerNameArr.join(' ');  
+
+        
+        const url = "https://script.google.com/macros/s/AKfycbzZjmo1PoWxpuxe1hOBasi2c2tlsa5cn2iWlwOQZk6jdIgeWchfFC5Juk3vEhAqu7QE/exec";  
+
+        const formData = new FormData();
+        formData.append("group", group);
+        formData.append("finca", finca);
+        formData.append("workerId", workerId);  
+        formData.append("workerName", workerName); 
+
+        fetch(url, {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            
+        })
+        .catch(error => console.error("Erreur lors de l'envoi des données :", error));
+    });
+
+    
 </script>
 
 </body>
