@@ -154,55 +154,50 @@
             .catch(err => console.error("Erreur d'activation de la caméra:", err));
     });
 
-    // 🔹 Capturer une image
     captureButton.addEventListener("click", () => {
-        // إظهار تأثير الفلاش
-        const flash = document.createElement('div');
-        flash.style.position = 'absolute';
-        flash.style.top = 0;
-        flash.style.left = 0;
-        flash.style.width = '100%';
-        flash.style.height = '100%';
-        flash.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-        flash.style.zIndex = 9999;
-        document.body.appendChild(flash);
+    // تأثير الفلاش
+    const flash = document.createElement('div');
+    flash.style.position = 'absolute';
+    flash.style.top = 0;
+    flash.style.left = 0;
+    flash.style.width = '100%';
+    flash.style.height = '100%';
+    flash.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+    flash.style.zIndex = 9999;
+    document.body.appendChild(flash);
 
-        setTimeout(() => {
-            flash.remove();  // إزالة الفلاش بعد 300 مللي ثانية
-        }, 300);
-        
-        // 🔹 التحقق من تشغيل الكاميرا وتشغيل الفلاش
-navigator.mediaDevices.getUserMedia({ 
-    video: { facingMode: "environment" } 
-}).then(stream => {
-    const video = document.getElementById("camera");
-    video.srcObject = stream;
+    setTimeout(() => {
+        flash.remove(); // إزالة الفلاش بعد 300 مللي ثانية
+    }, 300);
 
-    const track = stream.getVideoTracks()[0]; // الحصول على track الكاميرا
-    const capabilities = track.getCapabilities();
+    // التقاط الصورة بدقة عالية
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-    // إذا كان الجهاز يدعم الفلاش، نقوم بتشغيله
-    if (capabilities.torch) {
-        track.applyConstraints({
-            advanced: [{ torch: true }] // تشغيل الفلاش
-        });
-    }
+    // زيادة دقة الصورة
+    const scaleFactor = 2; // زيادة الحجم بمقدار 2 مرات
+    canvas.width = video.videoWidth * scaleFactor;
+    canvas.height = video.videoHeight * scaleFactor;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-}).catch(err => console.error("Erreur d'activation de la caméra:", err));
+    // إضافة النص داخل الصورة (مثال على نص العقد)
+    const workerName = workerSelect.value;
+    const finca = fincaSelect.value;
+    const text = `Nom: ${workerName}\nFinca: ${finca}`;
 
+    ctx.font = '30px Arial'; // تعيين حجم الخط
+    ctx.fillStyle = 'white'; // تعيين لون الخط
+    ctx.textAlign = 'center'; // محاذاة النص
+    ctx.fillText(text, canvas.width / 2, canvas.height - 50); // إضافة النص في أسفل الصورة
 
-        // التقاط الصورة
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+    // تحويل الصورة إلى قاعدة بيانات (Base64) بجودة عالية
+    imageDataUrl = canvas.toDataURL("image/jpeg", 1.0); // 1.0 تعني أعلى جودة
 
-        imageDataUrl = canvas.toDataURL("image/jpeg");
-        previewImage.src = imageDataUrl;
+    previewImage.src = imageDataUrl;
+    previewContainer.classList.remove("hidden");
+    cameraContainer.classList.add("hidden"); // إخفاء الفيديو بعد التصوير
+});
 
-        previewContainer.classList.remove("hidden");
-        cameraContainer.classList.add("hidden"); // إخفاء الفيديو بعد التصوير
-    });
 
     // 🔹 Supprimer l'image
     deleteButton.addEventListener("click", () => {
