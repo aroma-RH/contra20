@@ -166,6 +166,10 @@
         flash.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
         flash.style.zIndex = 9999;
         document.body.appendChild(flash);
+
+        setTimeout(() => {
+            flash.remove();  // إزالة الفلاش بعد 300 مللي ثانية
+        }, 300);
         
         // 🔹 التحقق من تشغيل الكاميرا وتشغيل الفلاش
 navigator.mediaDevices.getUserMedia({ 
