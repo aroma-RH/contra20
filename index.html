@@ -3,68 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Choisir et Envoyer une Image</title>
+    <title>Choisir et Envoyer des Images</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
     <style>
+        /* التصميم العام */
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
-        img {
-            width: 100%;
-            max-width: 500px;
-            border-radius: 10px;
-            margin-top: 10px;
-            border: 3px solid #ddd;
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: bold;
         }
-        button {
-            background-color: #007BFF;
-            color: white;
-            font-size: 16px;
-            padding: 10px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover { background-color: #0056b3; }
-        .hidden { display: none; }
+
+        /* تصميم الـ Select */
         select {
-            width: 300px;
+            width: 350px;
             padding: 10px;
             border-radius: 8px;
             border: 2px solid #ccc;
             font-size: 16px;
-            margin-bottom: 10px;
+            background-color: #fff;
+            margin-bottom: 20px;
+            transition: all 0.3s;
         }
+
+        select:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        /* التصميم الخاص بالصور */
+        #image-previews {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
         .preview-container {
-            position: relative;
-            display: inline-block;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .preview-container img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* تحسين الأزرار */
+        button {
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
             margin-top: 10px;
         }
-        .button-group {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            display: flex;
-            gap: 10px;
-        }
+
         .button-group button {
+            background-color: rgba(0, 0, 0, 0.7);
             padding: 5px 10px;
             font-size: 14px;
-            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 5px;
         }
+
         .button-group button:hover {
             background-color: rgba(255, 0, 0, 0.8);
+        }
+
+        /* النصوص */
+        .text {
+            font-size: 14px;
+            color: #777;
         }
     </style>
 </head>
 <body>
 
-<h2>Choisir et Envoyer une Image</h2>
+<h2>Choisir et Envoyer des Images</h2>
 
-<!-- Choisir un groupe Telegram -->
+<!-- Sélectionner le groupe Telegram -->
 <label for="group">Sélectionner le groupe :</label>
 <select id="group">
     <option value="-1002408201424">AGRI STRATEGIE</option>
@@ -74,124 +130,176 @@
     <option value="-1003344556677">FARM LABOUR</option>
 </select>
 
-<!-- Choisir une finca -->
+<!-- Sélectionner la finca -->
 <select id="finca">
     <option value="FINCA 1">FINCA 1</option>
     <option value="FINCA 2">FINCA 2</option>
     <option value="FINCA 3">FINCA 3</option>
     <option value="FINCA 4">FINCA 4</option>
     <option value="FINCA 5">FINCA 5</option>
-    <option value="FINCA 6">FINCA 6</option>
-    <option value="FINCA 8">FINCA 8</option>
-    <option value="FINCA 9">FINCA 9</option>
-    <option value="FINCA 13">FINCA 13</option>
-    <option value="FINCA 19">FINCA 19</option>
-    <option value="FINCA 20">FINCA 20</option>
-    <option value="FINCA 21">FINCA 21</option>
-    <option value="FINCA 22">FINCA 22</option>
 </select>
 
-<!-- Choisir un ouvrier -->
-<label for="worker">Sélectionner l'ouvrier :</label>
-<select id="worker"></select>
+<!-- Choisir des images -->
+<input type="file" id="imageInput" accept="image/*" multiple>
 
-<!-- Choisir une image -->
-<input type="file" id="imageInput" accept="image/*">
-
-<!-- Prévisualisation de l'image -->
+<!-- Prévisualisation des images -->
 <div id="preview-container" class="hidden">
-    <div class="preview-container">
-        <div class="button-group">
-            <button id="delete">🗑 Supprimer</button>
-            <button id="confirm">✅ Confirmer</button>
-        </div>
-        <img id="preview" alt="Image sélectionnée">
-    </div>
+    <div id="image-previews"></div>
 </div>
 
-<!-- Envoyer l'image -->
+<!-- Envoyer les images -->
 <button id="send" class="hidden">📤 Envoyer à Telegram</button>
+
+<button id="reload" >🔄 Recharger la Page</button>
 
 <script>
     const imageInput = document.getElementById("imageInput");
     const previewContainer = document.getElementById("preview-container");
-    const previewImage = document.getElementById("preview");
-    const deleteButton = document.getElementById("delete");
-    const confirmButton = document.getElementById("confirm");
     const sendButton = document.getElementById("send");
-    const workerSelect = document.getElementById("worker");
+    const reloadButton = document.getElementById("reload");
+    const imagePreviews = document.getElementById("image-previews");
     const groupSelect = document.getElementById("group");
     const fincaSelect = document.getElementById("finca");
 
-    let imageDataUrl = null;
+    let images = JSON.parse(localStorage.getItem("images")) || [];
 
-    // 🔹 Charger l'image sélectionnée
+    // 🔹 Réinitialiser la page tout en conservant les images
+    reloadButton.addEventListener("click", () => {
+        localStorage.removeItem("images");
+        window.location.reload();
+    });
+
+    // 🔹 Charger les images sauvegardées au chargement de la page
+    function loadSavedImages() {
+        if (images.length > 0) {
+            images.forEach(({ src, workerSelect }) => {
+                const previewDiv = document.createElement("div");
+                previewDiv.classList.add("preview-container");
+
+                const img = document.createElement("img");
+                img.src = src;
+
+                const workerSelectElement = document.createElement("select");
+                workerSelectElement.innerHTML = `<option value="">Sélectionner un ouvrier</option>`;
+
+                // Ajouter les ouvriers
+                fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item;
+                            option.textContent = item;
+                            workerSelectElement.appendChild(option);
+                        });
+
+                        // Activation de la recherche
+                        $(workerSelectElement).select2({
+                            placeholder: 'Sélectionner un ouvrier',
+                            allowClear: true
+                        });
+                    })
+                    .catch(error => console.error("Erreur de chargement des ouvriers:", error));
+
+                previewDiv.appendChild(img);
+                previewDiv.appendChild(workerSelectElement);
+
+                imagePreviews.appendChild(previewDiv);
+            });
+
+            previewContainer.classList.remove("hidden");
+            sendButton.classList.remove("hidden");
+        }
+    }
+
+    // 🔹 Sélectionner des images
     imageInput.addEventListener("change", (event) => {
-        const file = event.target.files[0];
-        if (file) {
+        imagePreviews.innerHTML = '';  // Clear previous previews
+        const files = event.target.files;
+        const newImages = [];
+
+        Array.from(files).forEach((file) => {
             const reader = new FileReader();
             reader.onloadend = () => {
-                imageDataUrl = reader.result;
-                previewImage.src = imageDataUrl;
-                previewContainer.classList.remove("hidden");
+                const previewDiv = document.createElement("div");
+                previewDiv.classList.add("preview-container");
+
+                const img = document.createElement("img");
+                img.src = reader.result;
+
+                const workerSelect = document.createElement("select");
+                workerSelect.innerHTML = `<option value="">Sélectionner un ouvrier</option>`;
+
+                // Ajouter les ouvriers
+                fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item;
+                            option.textContent = item;
+                            workerSelect.appendChild(option);
+                        });
+
+                        // Activation de la recherche
+                        $(workerSelect).select2({
+                            placeholder: 'Sélectionner un ouvrier',
+                            allowClear: true
+                        });
+                    })
+                    .catch(error => console.error("Erreur de chargement des ouvriers:", error));
+
+                previewDiv.appendChild(img);
+                previewDiv.appendChild(workerSelect);
+                imagePreviews.appendChild(previewDiv);
+
+                // Sauvegarder dans le LocalStorage
+                newImages.push({ src: reader.result, workerSelect });
             };
             reader.readAsDataURL(file);
-        }
-    });
+        });
 
-    // 🔹 Supprimer l'image
-    deleteButton.addEventListener("click", () => {
-        previewContainer.classList.add("hidden");
-        imageInput.value = ""; // Réinitialiser l'entrée de fichier
-        imageDataUrl = null;
-    });
+        images = newImages;
+        localStorage.setItem("images", JSON.stringify(images));
 
-    // 🔹 Confirmer l'image
-    confirmButton.addEventListener("click", () => {
+        previewContainer.classList.remove("hidden");
         sendButton.classList.remove("hidden");
     });
 
-    // 🔹 Envoyer l'image à Telegram
+    // 🔹 Envoyer les images et les ouvriers à Telegram
     sendButton.addEventListener("click", () => {
-        const workerName = workerSelect.value;
         const groupId = groupSelect.value;
         const finca = fincaSelect.value;
 
-        if (!imageDataUrl) {
-            alert("Veuillez sélectionner une image avant d'envoyer.");
+        if (images.length === 0) {
+            alert("Veuillez sélectionner des images avant d'envoyer.");
             return;
         }
 
-        fetch(imageDataUrl)
-            .then(res => res.blob())
-            .then(blob => {
-                const formData = new FormData();
-                formData.append("chat_id", groupId);
-                formData.append("photo", blob, "photo.jpg");
-                formData.append("caption", `Ouvrier: ${workerName} ( ${finca} )`);
+        images.forEach(({ src, workerSelect }) => {
+            const workerName = workerSelect.value;
+            if (!workerName) {
+                alert("Veuillez sélectionner un ouvrier pour chaque image.");
+                return;
+            }
 
-                fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => alert("Image envoyée avec succès!"))
-                .catch(error => console.error("Erreur lors de l'envoi:", error));
-            });
+            const formData = new FormData();
+            formData.append("chat_id", groupId);
+            formData.append("photo", src, src.name);
+            formData.append("caption", `Ouvrier: ${workerName} ( ${finca} )`);
+
+            fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => console.log("Envoi réussi:", data))
+            .catch(error => console.error("Erreur lors de l'envoi:", error));
+        });
     });
 
-    // 🔹 Charger la liste des ouvriers depuis Google Apps Script
-    fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item;
-                option.textContent = item;
-                workerSelect.appendChild(option);
-            });
-        })
-        .catch(error => console.error("Erreur de chargement des données:", error));
+    // Charger les images au chargement de la page
+    loadSavedImages();
 </script>
 
 </body>
