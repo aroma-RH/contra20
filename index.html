@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mini</title>
+    <title>mincsi</title>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <style>
@@ -198,32 +198,40 @@
 
     // 🔹 إرسال الصورة إلى Telegram
     sendButton.addEventListener("click", () => {
-        const workerName = workerSelect.value;
-        const groupId = groupSelect.value;
-        const finca = fincaSelect.value;
+    const workerName = workerSelect.value;
+    const groupId = groupSelect.value;
+    const finca = fincaSelect.value;
 
-        if (!imageDataUrl) {
-            alert("Veuillez capturer une image avant d'envoyer.");
-            return;
-        }
+    if (!imageDataUrl) {
+        alert("Veuillez capturer une image avant d'envoyer.");
+        return;
+    }
 
-        fetch(imageDataUrl)
-            .then(res => res.blob())
-            .then(blob => {
-                const formData = new FormData();
-                formData.append("chat_id", groupId);
-                formData.append("photo", blob, "photo.jpg");
-                formData.append("caption", `${workerName} ( ${finca} )`);
-
-                fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => console.log("Envoi réussi:", data))
-                .catch(error => console.error("Erreur lors de l'envoi:", error));
+    fetch(imageDataUrl)
+        .then(res => res.blob())
+        .then(blob => {
+            const formData = new FormData();
+            formData.append("chat_id", groupId);
+            formData.append("photo", blob, "photo.jpg");
+            formData.append("caption", `${workerName} ( ${finca} )`);
+            
+            // إرسال الصورة بدون ضغط
+            fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Envoi réussi:", data);
+                alert("Photo envoyée avec succès.");
+            })
+            .catch(error => {
+                console.error("Erreur lors de l'envoi:", error);
+                alert("Erreur lors de l'envoi.");
             });
-    });
+        });
+});
+
 
     // 🔹 Charger la liste des ouvriers depuis Google Apps Script
     fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
