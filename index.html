@@ -1,273 +1,157 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>min52i</title>
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+    <title>HD Image Scanner with Telegram</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f4f4f4;
-            padding: 20px;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
         video, canvas, img {
-            width: 300px;
-            border-radius: 10px;
-            margin-top: 10px;
-            border: 3px solid #ddd;
+            max-width: 100%;
+            display: block;
+            margin: auto;
+        }
+        .hidden {
+            display: none;
         }
         button {
-            background-color: #007BFF;
+            background: #007bff;
             color: white;
-            font-size: 16px;
-            padding: 10px;
-            margin: 10px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
-        }
-        button:hover { background-color: #0056b3; }
-        .hidden { display: none; }
-        select {
-            width: 300px;
-            padding: 10px;
-            border-radius: 8px;
-            border: 2px solid #ccc;
             font-size: 16px;
-            margin-bottom: 10px;
+            margin: 10px;
+            border-radius: 5px;
         }
-        .preview-container {
-            position: relative;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        .preview-container img {
-            width: 100%;
-            border-radius: 10px;
-        }
-        .button-group {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            display: flex;
-            gap: 10px;
-        }
-        .button-group button {
-            padding: 5px 10px;
-            font-size: 14px;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        .button-group button:hover {
-            background-color: rgba(255, 0, 0, 0.8);
+        button:hover {
+            background: #0056b3;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Capture et Envoi d'Image</h2>
-
-    <!-- Choisir un groupe Telegram -->
-    <label for="group">Sélectionner le groupe :</label>
-    <select id="group">
-        <option value="-1002408201424">AGRI STRATEGIE</option>
-        <option value="-1000987654321">AGRI SUPPORT</option>
-        <option value="-1002408201424">BEST PROFIL</option>
-        <option value="-1002233445566">AGRICONOMIE</option>
-        <option value="-1003344556677">FARM LABOUR</option>
-    </select>
-    <select id="finca">
-        <option value="FINCA 1">FINCA 1</option>
-        <option value="FINCA 2">FINCA 2</option>
-        <option value="FINCA 3">FINCA 3</option>
-        <option value="FINCA 4">FINCA 4</option>
-        <option value="FINCA 5">FINCA 5</option>
-        <option value="FINCA 6">FINCA 6</option>
-        <option value="FINCA 8">FINCA 8</option>
-        <option value="FINCA 9">FINCA 9</option>
-        <option value="FINCA 13">FINCA 13</option>
-        <option value="FINCA 19">FINCA 19</option>
-        <option value="FINCA 20">FINCA 20</option>
-        <option value="FINCA 21">FINCA 21</option>
-        <option value="FINCA 22">FINCA 22</option>
-    </select>
+    <h2>HD Image Scanner</h2>
     
-    <!-- Choisir un ouvrier -->
-    <label for="worker">Sélectionner l'ouvrier :</label>
-    <select id="worker"></select>
-
-    
-    <button id="openCamera">📷 Ouvrir la caméra</button>
-
-    <!-- Zone de la caméra -->
-    <div id="cameraContainer" class="hidden">
-        <video id="camera" autoplay></video>
-        <button id="capture">📸 Capturer</button>
+    <div id="cameraContainer">
+        <video id="video" autoplay></video>
+        <button id="captureButton">Capture Image</button>
     </div>
 
-    <!-- Prévisualisation de l'image -->
-    <div id="preview-container" class="hidden">
-        <div class="preview-container">
-            <div class="button-group">
-                <button id="delete">🗑</button>
-                <button id="confirm">✅</button>
-            </div>
-            <img id="preview" alt="Image capturée">
-        </div>
+    <div id="previewContainer" class="hidden">
+        <img id="previewImage" alt="Scanned Image">
+        <button onclick="restartCamera()">Retake</button>
+        <button id="sendToTelegram">Send to Telegram</button>
     </div>
 
-    <!-- Envoyer l'image -->
-    <button id="send" class="hidden">📤 Envoyer à Telegram</button>
-</div>
+    <script>
+        const video = document.getElementById("video");
+        const captureButton = document.getElementById("captureButton");
+        const previewImage = document.getElementById("previewImage");
+        const sendToTelegramButton = document.getElementById("sendToTelegram");
+        const cameraContainer = document.getElementById("cameraContainer");
+        const previewContainer = document.getElementById("previewContainer");
 
-<script>
-    const openCameraButton = document.getElementById("openCamera");
-    const cameraContainer = document.getElementById("cameraContainer");
-    const video = document.getElementById("camera");
-    const captureButton = document.getElementById("capture");
-    const previewContainer = document.getElementById("preview-container");
-    const previewImage = document.getElementById("preview");
-    const deleteButton = document.getElementById("delete");
-    const confirmButton = document.getElementById("confirm");
-    const sendButton = document.getElementById("send");
-    const workerSelect = document.getElementById("worker");
-    const groupSelect = document.getElementById("group");
-    const fincaSelect = document.getElementById("finca");
+        let imageDataUrl = "";
 
-    let imageDataUrl = null;
-
-    // 🔹 Ouvrir la caméra
-    openCameraButton.addEventListener("click", () => {
-        cameraContainer.classList.remove("hidden");
-        previewContainer.classList.add("hidden");
-
+        // Start the camera
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => console.error("Erreur d'activation de la caméra:", err));
-    });
+            .then(stream => video.srcObject = stream)
+            .catch(error => console.error("Camera error:", error));
 
-    // 🔹 Capturer une image
-    captureButton.addEventListener("click", () => {
-        // إظهار تأثير الفلاش
-        const flash = document.createElement('div');
-        flash.style.position = 'absolute';
-        flash.style.top = 0;
-        flash.style.left = 0;
-        flash.style.width = '100%';
-        flash.style.height = '100%';
-        flash.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-        flash.style.zIndex = 9999;
-        document.body.appendChild(flash);
-
-        setTimeout(() => {
-            flash.remove();  // إزالة الفلاش بعد 300 مللي ثانية
-        }, 300);
-        
-        // 🔹 التحقق من تشغيل الكاميرا وتشغيل الفلاش
-navigator.mediaDevices.getUserMedia({ 
-    video: { facingMode: "environment" } 
-}).then(stream => {
-    const video = document.getElementById("camera");
-    video.srcObject = stream;
-
-    const track = stream.getVideoTracks()[0]; // الحصول على track الكاميرا
-    const capabilities = track.getCapabilities();
-
-    // إذا كان الجهاز يدعم الفلاش، نقوم بتشغيله
-    if (capabilities.torch) {
-        track.applyConstraints({
-            advanced: [{ torch: true }] // تشغيل الفلاش
-        });
-    }
-
-}).catch(err => console.error("Erreur d'activation de la caméra:", err));
-
-
-        // التقاط الصورة
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        imageDataUrl = canvas.toDataURL("image/jpeg");
-        previewImage.src = imageDataUrl;
-
-        previewContainer.classList.remove("hidden");
-        cameraContainer.classList.add("hidden"); // إخفاء الفيديو بعد التصوير
-    });
-
-    // 🔹 Supprimer l'image
-    deleteButton.addEventListener("click", () => {
-        previewContainer.classList.add("hidden");
-        imageDataUrl = null;
-    });
-
-    // 🔹 Confirmer l'image (stockage محلي)
-    confirmButton.addEventListener("click", () => {
-        localStorage.setItem("capturedImage", imageDataUrl);
-        sendButton.classList.remove("hidden");
-    });
-
-    // 🔹 إرسال الصورة إلى Telegram
-    sendButton.addEventListener("click", () => {
-    const workerName = workerSelect.value;
-    const groupId = groupSelect.value;
-    const finca = fincaSelect.value;
-
-    if (!imageDataUrl) {
-        alert("Veuillez capturer une image avant d'envoyer.");
-        return;
-    }
-
-    fetch(imageDataUrl)
-        .then(res => res.blob())
-        .then(blob => {
-            const formData = new FormData();
-            formData.append("chat_id", groupId);
-            formData.append("photo", blob, "photo.jpg");
-            formData.append("caption", `${workerName} ( ${finca} )`);
+        // Capture image with high resolution
+        captureButton.addEventListener("click", () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = 1080;  
+            canvas.height = 1920;
             
-            // إرسال الصورة بدون ضغط
-            fetch("https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto", {
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Apply image enhancement
+            applyFilters(ctx, canvas);
+
+            imageDataUrl = canvas.toDataURL("image/jpeg", 1.0); // High-quality save
+            previewImage.src = imageDataUrl;
+
+            previewContainer.classList.remove("hidden");
+            cameraContainer.classList.add("hidden");
+            stopCamera();
+        });
+
+        function stopCamera() {
+            let stream = video.srcObject;
+            let tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+
+        function restartCamera() {
+            previewContainer.classList.add("hidden");
+            cameraContainer.classList.remove("hidden");
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => video.srcObject = stream)
+                .catch(error => console.error("Camera error:", error));
+        }
+
+        // Apply contrast and sharpening filter
+        function applyFilters(ctx, canvas) {
+            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let data = imageData.data;
+
+            // Convert to high-contrast black & white
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i], g = data[i + 1], b = data[i + 2];
+                let gray = 0.3 * r + 0.59 * g + 0.11 * b;
+                gray = gray > 120 ? 255 : 0;  
+                data[i] = data[i + 1] = data[i + 2] = gray;
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // Send image to Telegram
+        sendToTelegramButton.addEventListener("click", () => {
+            if (!imageDataUrl) {
+                alert("No image captured!");
+                return;
+            }
+
+            let blob = dataURItoBlob(imageDataUrl);
+            let formData = new FormData();
+            formData.append("-1002408201424", "7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg");
+            formData.append("photo", blob, "image.jpg");
+
+            fetch(`https://api.telegram.org/bot7914915084:AAFy5X26pPqYwDJU84jgBWWRt_7PqgPBvQg/sendPhoto`, {
                 method: "POST",
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
-                console.log("Envoi réussi:", data);
-                alert("Photo envoyée avec succès.");
+                if (data.ok) {
+                    alert("Image sent to Telegram!");
+                } else {
+                    alert("Error sending image.");
+                }
             })
-            .catch(error => {
-                console.error("Erreur lors de l'envoi:", error);
-                alert("Erreur lors de l'envoi.");
-            });
+            .catch(error => console.error("Telegram API error:", error));
         });
-});
 
-
-    // 🔹 Charger la liste des ouvriers depuis Google Apps Script
-    fetch('https://script.google.com/macros/s/AKfycbwAiB1V0BBGSUkXQFnw351xoGMlmD_wBSzHviJwoLOAuSi9rAlSMCjfpd5T2ohdgBsyZA/exec')
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item;
-                option.textContent = item;
-                workerSelect.appendChild(option);
-            });
-
-            new Choices(workerSelect, { searchEnabled: true });
-        })
-        .catch(error => console.error("Erreur de chargement des données:", error));
-</script>
+        // Convert Data URL to Blob
+        function dataURItoBlob(dataURI) {
+            let byteString = atob(dataURI.split(',')[1]);
+            let mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            let ab = new ArrayBuffer(byteString.length);
+            let ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: mimeString });
+        }
+    </script>
 
 </body>
 </html>
