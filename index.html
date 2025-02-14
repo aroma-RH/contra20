@@ -210,7 +210,7 @@
         const finca = fincaSelect.value;
 
         if (!imageDataUrl) {
-            alert("Veuillez sélectionner une image avant d'envoyer.");
+            alert("Veuillez sélectionner  le contrat avant d'envoyer.");
             return;
         }
 
@@ -227,7 +227,7 @@
                     body: formData
                 })
                 .then(response => response.json())
-                .then(data => alert("Image envoyée avec succès!"))
+                .then(data => alert("contrat envoyée avec succès!"))
                 .catch(error => console.error("Erreur lors de l'envoi:", error));
             });
     });
@@ -262,7 +262,7 @@
 
        
         if (!group || !finca || !worker) {
-            alert("يرجى تحديد جميع القيم قبل الإرسال.");
+            alert("Veuillez spécifier toutes les valeurs avant de soumettre.");
             return;
         }
 
