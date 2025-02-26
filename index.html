@@ -290,7 +290,39 @@
         .catch(error => console.error("Erreur lors de l'envoi des données :", error));
     });
 
-    
+    sendButton.addEventListener("click", () => {
+    const worker = workerSelect.value;
+
+    if (!worker) {
+        alert("Veuillez sélectionner le facteur avant l'envoi.");
+        return;
+    }
+
+    const [workerId, ...workerNameArr] = worker.split(' ');
+    const workerName = workerNameArr.join(' ');  
+
+    const url = "https://script.google.com/macros/s/AKfycbzIKjHqFywsBNy_SZOlhhVpOsVm_HnlW7H9-qwWcVm73FYaqz0Pu-i3bI1a9tyJ2DQd/exec";  
+
+    const formData = new FormData();
+    formData.append("workerId", workerId);  
+
+    fetch(url, {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Données mises à jour avec succès !");
+        } else if (data.status === "not found") {
+            alert("C OK");
+        } else {
+            alert(" ERREUR: " + data.message);
+        }
+    })
+    .catch(error => console.error("Erreur lors de l'envoi :", error));
+});
+
 </script>
 
 </body>
